@@ -1,5 +1,4 @@
 <?php
-
 $hostname = "localhost";
 $username = "root";
 $password = "";
@@ -13,9 +12,7 @@ $konek = new mysqli(
 );
 
 if($konek->connect_error){
-
-    die("Koneksi gagal");
-
+    die("Koneksi gagal: " . $konek->connect_error);
 }
-echo "Koneksi berhasil";
+
 ?>

@@ -8,51 +8,39 @@ if(!isset($_SESSION['user'])){
 
 include 'koneksi.php';
 
-/* =========================
-   CEK POPUP SETELAH EDIT
-========================= */
-
 $booking_update = null;
 
 if(isset($_GET['update'])){
 
     $id = $_GET['update'];
-
-    $ambil = mysqli_query($konek,
+    $ambil = mysqli_query(
+        $konek,
         "SELECT * FROM booking WHERE id='$id'"
     );
-
     $booking_update = mysqli_fetch_assoc($ambil);
 }
 
-/* =========================
-   DATA LAYANAN
-========================= */
-
 $layanan = [
-
     "Manicure",
     "Pedicure",
     "Nail Extension",
     "Gel Polish",
-    "Nail Art Design",
     "Nail Removal"
-
 ];
-
-/* =========================
-   DATA NAIL ART
-========================= */
-
+$harga_layanan = [
+    "Manicure" => 50000,
+    "Pedicure" => 60000,
+    "Nail Extension" => 120000,
+    "Gel Polish" => 80000,
+    "Nail Removal" => 30000
+];
 $nail_art = [
-
     "Korean Style",
     "Glitter Nails",
     "Floral Design",
     "Marble Nails",
     "Luxury Nails",
     "Cute Nails"
-
 ];
 
 $error = "";
@@ -60,36 +48,45 @@ $sukses = "";
 
 if(isset($_POST['booking'])){
 
-    $nama = $_POST['nama'];
-
-    // CHECKBOX
+    $nama = $_SESSION['user'];
     $layanan_pilih = isset($_POST['layanan'])
         ? implode(", ", $_POST['layanan'])
         : "";
 
     $nail = $_POST['nail'];
+
     $tanggal = $_POST['tanggal'];
     $jam = $_POST['jam'];
 
+    $total_harga = 0;
+
+    if(isset($_POST['layanan'])){
+        foreach($_POST['layanan'] as $item){
+            if(isset($harga_layanan[$item])){
+                $total_harga += $harga_layanan[$item];
+            }
+        }
+    }
+
     if(
-        $nama == "" ||
         $layanan_pilih == "" ||
         $tanggal == "" ||
         $jam == ""
     ){
-
         $error = "Data masih ada yang kosong ❌";
-
     } else {
 
-        mysqli_query($konek,
+        mysqli_query(
+
+            $konek,
 
             "INSERT INTO booking(
                 nama,
                 layanan,
                 nail,
                 tanggal,
-                jam
+                jam,
+                total_harga
             )
 
             VALUES(
@@ -97,11 +94,11 @@ if(isset($_POST['booking'])){
                 '$layanan_pilih',
                 '$nail',
                 '$tanggal',
-                '$jam'
+                '$jam',
+                '$total_harga'
             )"
 
         );
-
         $sukses = "Booking berhasil 💖";
     }
 }
@@ -113,78 +110,81 @@ if(isset($_POST['booking'])){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking GlossyNails</title>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap"
+        rel="stylesheet"
+    >
 
     <style>
-
         body{
             background-color: #fff5f7;
             font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-
         .navbar{
             background-color: white;
         }
-
         .card{
             border: none;
             border-radius: 20px;
         }
-
         .judul{
             color: #ff4f81;
         }
-
         .btn-pink{
             background-color: #ff4f81;
             color: white;
             border: none;
         }
-
         .btn-pink:hover{
             background-color: #ff2f6d;
             color: white;
         }
-
         .layanan-box{
             background-color: #fff0f5;
             padding: 15px;
             border-radius: 15px;
         }
-
+        .footer{
+            background-color: white;
+            padding: 40px 0;
+            border-top: 3px solid #ff4f81;
+            color: #666;
+            margin-top: auto;
+        }
+        .footer h5{
+            color: #ff4f81;
+        }
+        .footer p{
+            font-size: 14px;
+        }
     </style>
-
 </head>
 
 <body>
-
-<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg shadow-sm">
-
     <div class="container">
-
         <a class="navbar-brand fw-bold text-danger" href="index.php">
             💅 GlossyNails
         </a>
 
-        <button class="navbar-toggler"
+        <button
+            class="navbar-toggler"
             type="button"
             data-bs-toggle="collapse"
-            data-bs-target="#navbarNav">
-
+            data-bs-target="#navbarNav"
+        >
             <span class="navbar-toggler-icon"></span>
-
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-
             <ul class="navbar-nav ms-auto">
-
                 <li class="nav-item">
                     <a class="nav-link" href="index.php">
                         Home
@@ -192,14 +192,14 @@ if(isset($_POST['booking'])){
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link active fw-bold text-danger" href="booking.php">
-                        Booking
+                    <a class="nav-link active fw-bold text-danger" href="data_booking.php">
+                        Riwayat Booking
                     </a>
                 </li>
 
                 <li class="nav-item">
                     <span class="nav-link">
-                        Halo, <?= $_SESSION['user']; ?> 💖
+                        Halo, <?= $_SESSION['user']; ?> 
                     </span>
                 </li>
 
@@ -208,29 +208,19 @@ if(isset($_POST['booking'])){
                         Logout
                     </a>
                 </li>
-
             </ul>
-
         </div>
-
     </div>
-
 </nav>
 
-<!-- FORM BOOKING -->
 <div class="container mt-5 mb-5">
-
     <div class="col-md-7 mx-auto">
-
         <div class="card shadow p-4">
-
             <h2 class="text-center mb-4 judul">
                 Booking Nail Art 💅
             </h2>
 
             <form method="POST">
-
-                <!-- NAMA -->
                 <label class="fw-bold">
                     Nama Customer
                 </label>
@@ -239,23 +229,20 @@ if(isset($_POST['booking'])){
                     type="text"
                     name="nama"
                     class="form-control mb-3"
-                    placeholder="Masukkan nama"
-                    required
+                    value="<?= $_SESSION['user']; ?>"
+                    readonly
                 >
 
-                <!-- CHECKBOX LAYANAN -->
                 <label class="fw-bold mb-2">
                     Pilih Layanan
                 </label>
 
                 <div class="layanan-box mb-3">
-
                     <?php
                     foreach($layanan as $item){
                     ?>
 
                         <div class="form-check mb-2">
-
                             <input
                                 class="form-check-input"
                                 type="checkbox"
@@ -264,38 +251,51 @@ if(isset($_POST['booking'])){
                             >
 
                             <label class="form-check-label">
-                                <?= $item; ?>
+                                <?= $item; ?> - Rp <?= number_format($harga_layanan[$item], 0, ',', '.'); ?>
                             </label>
-
                         </div>
 
                     <?php } ?>
-
                 </div>
 
-                <!-- NAIL ART -->
-                <label class="fw-bold">
-                    Jenis Nail Art
+                <label class="fw-bold mb-2">
+                    Jenis Nail Art (Opsional)
                 </label>
 
-                <select
-                    name="nail"
-                    class="form-control mb-3"
-                >
+                <div class="layanan-box mb-3">
+                    <div class="form-check mb-2">
+                        <input
+                            class="form-check-input"
+                            type="radio"
+                            name="nail"
+                            value="Tidak Pakai Nail Art"
+                            checked
+                        >
+                        <label class="form-check-label">
+                            Tidak Pakai Nail Art
+                        </label>
+                    </div>
 
                     <?php
                     foreach($nail_art as $nail_list){
                     ?>
 
-                        <option>
-                            <?= $nail_list; ?>
-                        </option>
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="nail"
+                                value="<?= $nail_list; ?>"
+                            >
+
+                            <label class="form-check-label">
+                                <?= $nail_list; ?> - Rp 100.000
+                            </label>
+                        </div>
 
                     <?php } ?>
+                </div>
 
-                </select>
-
-                <!-- TANGGAL -->
                 <label class="fw-bold">
                     Tanggal Booking
                 </label>
@@ -307,7 +307,6 @@ if(isset($_POST['booking'])){
                     required
                 >
 
-                <!-- JAM -->
                 <label class="fw-bold">
                     Jam Booking
                 </label>
@@ -319,7 +318,6 @@ if(isset($_POST['booking'])){
                     required
                 >
 
-                <!-- BUTTON -->
                 <button
                     type="submit"
                     name="booking"
@@ -327,29 +325,21 @@ if(isset($_POST['booking'])){
                 >
                     Booking Sekarang
                 </button>
-
             </form>
 
-            <!-- ERROR -->
             <?php if($error != "") { ?>
-
                 <div class="alert alert-danger mt-4">
-
                     <?= $error; ?>
-
                 </div>
 
             <?php } ?>
 
-            <!-- SUKSES BOOKING BARU -->
             <?php if($sukses != "") { ?>
-
                 <?php
                 $id_booking = mysqli_insert_id($konek);
                 ?>
 
                 <div class="alert alert-success mt-4">
-
                     <h5 class="fw-bold">
                         <?= $sukses; ?>
                     </h5>
@@ -381,36 +371,28 @@ if(isset($_POST['booking'])){
                         <?= $jam; ?>
                     </p>
 
-                    <div class="mt-3">
+                    <p>
+                        <b>Total Harga :</b>
+                        Rp <?= number_format($total_harga); ?>
+                    </p>
 
-                        <a
-                            href="edit.php?id=<?= $id_booking; ?>"
-                            class="btn btn-warning"
-                        >
+                    <div class="mt-3">
+                        <a href="edit_booking.php?id=<?= $id_booking; ?>" class="btn btn-warning">
                             Edit Booking
                         </a>
 
-                        <a
-                            href="hapus.php?id=<?= $id_booking; ?>"
-                            class="btn btn-danger"
-                            onclick="return confirm('Yakin mau hapus booking ini?')"
-                        >
-                            Hapus Booking
+                        <a href="index.php" class="btn btn-pink ms-2">
+                            Kembali ke Home
                         </a>
-
                     </div>
-
                 </div>
 
             <?php } ?>
 
-            <!-- POPUP SETELAH EDIT -->
             <?php if($booking_update != null) { ?>
-
                 <div class="alert alert-success mt-4">
-
                     <h5 class="fw-bold">
-                         Booking berhasil 💖
+                        Booking berhasil diupdate 💖
                     </h5>
 
                     <hr>
@@ -440,40 +422,41 @@ if(isset($_POST['booking'])){
                         <?= $booking_update['jam']; ?>
                     </p>
 
-                    <div class="mt-3">
+                    <p>
+                        <b>Total Harga :</b>
+                        Rp <?= number_format($booking_update['total_harga'], 0, ',', '.'); ?>
+                    </p>
 
-                        <a
-                            href="edit.php?id=<?= $booking_update['id']; ?>"
-                            class="btn btn-warning"
-                        >
+                    <div class="mt-3">
+                        <a href="edit.php?id=<?= $booking_update['id']; ?>" class="btn btn-warning">
                             Edit Lagi
                         </a>
 
-                        <a
-                            href="hapus.php?id=<?= $booking_update['id']; ?>"
-                            class="btn btn-danger"
-                            onclick="return confirm('Yakin mau hapus booking ini?')"
-                        >
-                            Hapus Booking
+                        <a href="index.php" class="btn btn-pink ms-2">
+                            Kembali ke Home
                         </a>
-
                     </div>
-
                 </div>
 
             <?php } ?>
-
         </div>
-
     </div>
-
 </div>
 
-<!-- FOOTER -->
-<footer class="bg-danger text-white text-center p-3">
+<footer class="footer">
+    <div class="container text-center">
+        <h5 class="fw-bold mb-2">
+            💅 GlossyNails Studio
+        </h5>
 
-    &copy; 2026 GlossyNails Studio | All Rights Reserved
+        <p class="mb-2">
+            Make your nails beautiful and elegant ✨
+        </p>
 
+        <small>
+            &copy; 2026 GlossyNails Studio | All Rights Reserved
+        </small>
+    </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

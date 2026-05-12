@@ -18,10 +18,8 @@ if(isset($_POST['register'])){
    );
      echo "
     <script>
-
         alert('Register berhasil');
         window.location.href = 'login.php';
-
     </script>
     ";
 }
@@ -37,38 +35,28 @@ if(isset($_POST['register'])){
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
-
         body{
             background-color: #fff5f7;
         }
-
         .card{
             border-radius: 20px;
             border: none;
         }
-
         .judul{
             color: #ff4f81;
         }
-
     </style>
-
 </head>
 
 <body>
-
 <div class="container mt-5">
-
     <div class="col-md-5 mx-auto">
-
         <div class="card shadow p-4">
-
             <h2 class="text-center mb-4 judul">
                 Register Customer 💅
             </h2>
 
             <form method="POST">
-
                 <label>Username</label>
 
                 <input
@@ -104,12 +92,9 @@ if(isset($_POST['register'])){
                 >
                    Register
                 </button>
-</form>
-
+            </form>
         </div>
-
     </div>
-
 </div>
 
 </body>

@@ -1,0 +1,219 @@
+<?php
+session_start();
+
+if(!isset($_SESSION['user'])){
+    header("Location: login.php");
+    exit;
+}
+
+include 'koneksi.php';
+
+$id = $_GET['id'];
+$data = mysqli_query($konek,
+    "SELECT * FROM booking WHERE id='$id'"
+);
+$row = mysqli_fetch_assoc($data);
+
+$layanan = [
+    "Manicure",
+    "Pedicure",
+    "Nail Extension",
+    "Gel Polish",
+    "Nail Removal"
+];
+
+$harga_layanan = [
+    "Manicure" => 50000,
+    "Pedicure" => 60000,
+    "Nail Extension" => 120000,
+    "Gel Polish" => 80000,
+    "Nail Removal" => 30000
+];
+
+$harga_nail = 100000;
+
+$nail_art = [
+    "Korean Style",
+    "Glitter Nails",
+    "Floral Design",
+    "Marble Nails",
+    "Luxury Nails",
+    "Cute Nails"
+];
+
+$layanan_terpilih = explode(", ", $row['layanan']);
+
+if(isset($_POST['update'])){
+    $nama = $_SESSION['user'];
+    $layanan_pilih = isset($_POST['layanan'])
+        ? $_POST['layanan']
+        : [];
+    $nail = $_POST['nail'];
+    $tanggal = $_POST['tanggal'];
+    $jam = $_POST['jam'];
+    $total_harga = 0;
+
+    foreach($layanan_pilih as $item){
+        if(isset($harga_layanan[$item])){
+            $total_harga += $harga_layanan[$item];
+        }
+    }
+
+    if($nail != "Tidak Pakai Nail Art"){
+        $total_harga += $harga_nail;
+    }
+
+    $layanan_text = implode(", ", $layanan_pilih);
+
+    mysqli_query($konek,
+        "UPDATE booking SET
+            nama='$nama',
+            layanan='$layanan_text',
+            nail='$nail',
+            tanggal='$tanggal',
+            jam='$jam',
+            total_harga='$total_harga'
+        WHERE id='$id'"
+    );
+
+    header("Location: booking.php?update=$id&total=$total_harga");
+    exit;
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Booking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body{
+            background-color: #fff5f7;
+            font-family: 'Poppins', sans-serif;
+        }
+        .card{
+            border: none;
+            border-radius: 20px;
+        }
+        .judul{
+            color: #ff4f81;
+        }
+        .layanan-box{
+            background-color: #fff0f5;
+            padding: 15px;
+            border-radius: 15px;
+        }
+        .btn-warning{
+            background-color: #ffc107;
+            border: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container mt-5 mb-5">
+    <div class="col-md-7 mx-auto">
+        <div class="card shadow p-4">
+            <h2 class="text-center mb-4 judul">
+                Edit Booking 💅
+            </h2>
+
+            <form method="POST">
+                <label class="fw-bold">Nama Customer</label>
+
+                <input
+                    type="text"
+                    class="form-control mb-3"
+                    value="<?= $_SESSION['user']; ?>"
+                    readonly
+                >
+
+                <label class="fw-bold mb-2">Pilih Layanan</label>
+
+                <div class="layanan-box mb-3">
+                    <?php foreach($layanan as $item){ ?>
+
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                name="layanan[]"
+                                value="<?= $item; ?>"
+                                <?= in_array($item, $layanan_terpilih) ? 'checked' : '' ?>
+                            >
+
+                            <label class="form-check-label">
+                                <?= $item; ?> - Rp <?= number_format($harga_layanan[$item], 0, ',', '.'); ?>
+                            </label>
+                        </div>
+                    <?php } ?>
+                </div>
+
+                <label class="fw-bold mb-2">
+                    Jenis Nail Art (Opsional)
+                </label>
+
+                <div class="layanan-box mb-3">
+                    <div class="form-check mb-2">
+                        <input
+                            class="form-check-input"
+                            type="radio"
+                            name="nail"
+                            value="Tidak Pakai Nail Art"
+                            <?= ($row['nail']=="Tidak Pakai Nail Art")?'checked':'' ?>
+                        >
+
+                        <label class="form-check-label">
+                            Tidak Pakai Nail Art
+                        </label>
+                    </div>
+
+                    <?php foreach($nail_art as $n){ ?>
+
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="nail"
+                                value="<?= $n; ?>"
+                                <?= ($row['nail']==$n)?'checked':'' ?>
+                            >
+
+                            <label class="form-check-label">
+                                <?= $n; ?> - Rp 100.000
+                            </label>
+                        </div>
+                    <?php } ?>
+                </div>
+
+                <label class="fw-bold">Tanggal Booking</label>
+                <input
+                    type="date"
+                    name="tanggal"
+                    class="form-control mb-3"
+                    value="<?= $row['tanggal']; ?>"
+                    required
+                >
+
+                <label class="fw-bold">Jam Booking</label>
+                <input
+                    type="time"
+                    name="jam"
+                    class="form-control mb-4"
+                    value="<?= $row['jam']; ?>"
+                    required
+                >
+
+                <button type="submit" name="update" class="btn btn-warning w-100">
+                    Update Booking
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
